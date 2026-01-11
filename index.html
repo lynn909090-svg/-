@@ -1,418 +1,202 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>냉장고 파먹기 요리사</title>
-
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-
-  <style>
-    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
-    body { font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
-    .animate-fadeIn { animation: fadeIn 0.25s ease-out; }
-    .animate-scaleIn { animation: scaleIn 0.18s ease-out; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-    @keyframes scaleIn { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: scale(1); } }
-    .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>냉장고 파먹기 요리사</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body { font-family: Pretendard, -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif; }
+        .animate-fadeIn { animation: fadeIn 0.3s ease-out; }
+        .animate-scaleIn { animation: scaleIn 0.2s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes scaleIn { from { opacity: 0; transform: scale(0.95); } to { opacity: 1; transform: scale(1); } }
+        /* 터치 시 피드백을 위한 스타일 */
+        .tap-highlight-none { -webkit-tap-highlight-color: transparent; }
+    </style>
 </head>
-
 <body class="bg-gray-50 text-gray-800">
-  <div id="root"></div>
 
-  <script type="text/babel">
-    const { useEffect, useMemo, useState } = React;
+<div id="root"></div>
 
-    // ✅ 아이콘: className/props 전달되게 수정
-    const IconBase = ({ children, size = 20, className = "" }) => (
-      <svg
-        className={className}
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        aria-hidden="true"
-      >
-        {children}
-      </svg>
-    );
+<script type="text/babel">
+    const { useState, useMemo } = React;
 
+    // 아이콘 컴포넌트 (SVG 직접 구현)
     const Icons = {
-      Plus: ({ size=20, className="" }) => (
-        <IconBase size={size} className={className}>
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </IconBase>
-      ),
-      X: ({ size=20, className="" }) => (
-        <IconBase size={size} className={className}>
-          <line x1="18" y1="6" x2="6" y2="18"></line>
-          <line x1="6" y1="6" x2="18" y2="18"></line>
-        </IconBase>
-      ),
-      ChefHat: ({ size=32, className="" }) => (
-        <IconBase size={size} className={className}>
-          <path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"></path>
-          <line x1="6" y1="17" x2="18" y2="17"></line>
-        </IconBase>
-      ),
-      Youtube: ({ size=20, className="" }) => (
-        <IconBase size={size} className={className}>
-          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
-          <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
-        </IconBase>
-      ),
-      Search: ({ size=20, className="" }) => (
-        <IconBase size={size} className={className}>
-          <circle cx="11" cy="11" r="8"></circle>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-        </IconBase>
-      ),
-      Clock: ({ size=12, className="" }) => (
-        <IconBase size={size} className={className}>
-          <circle cx="12" cy="12" r="10"></circle>
-          <polyline points="12 6 12 12 16 14"></polyline>
-        </IconBase>
-      ),
-      BarChart: ({ size=12, className="" }) => (
-        <IconBase size={size} className={className}>
-          <line x1="12" y1="20" x2="12" y2="10"></line>
-          <line x1="18" y1="20" x2="18" y2="4"></line>
-          <line x1="6" y1="20" x2="6" y2="16"></line>
-        </IconBase>
-      ),
-      Trash: ({ size=18, className="" }) => (
-        <IconBase size={size} className={className}>
-          <polyline points="3 6 5 6 21 6"></polyline>
-          <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path>
-          <path d="M10 11v6"></path>
-          <path d="M14 11v6"></path>
-          <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path>
-        </IconBase>
-      ),
-    };
-
-    const STORAGE_KEY = "fridgeChef_myIngredients_v1";
-
-    const normalizeIngredient = (s) =>
-      (s || "")
-        .trim()
-        .replace(/\s+/g, " ")
-        .replace(/[·•]/g, ""); // 자잘한 특수문자 정리
-
-    // ✅ "양파, 계란 김치 / 양파/계란/김치" 등 다양한 입력을 안전하게 분해
-    const splitIngredients = (raw) => {
-      const normalized = (raw || "").trim();
-      if (!normalized) return [];
-      return normalized
-        .split(/[,，/|\n]+|(?:\s{2,})/g) // 콤마/슬래시/파이프/줄바꿈/공백2칸 이상
-        .map(normalizeIngredient)
-        .filter(Boolean);
+        Plus: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+        X: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+        ChefHat: ({size=32}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M6 13.87A4 4 0 0 1 7.41 6a5.11 5.11 0 0 1 1.05-1.54 5 5 0 0 1 7.08 0A5.11 5.11 0 0 1 16.59 6 4 4 0 0 1 18 13.87V21H6Z"></path><line x1="6" y1="17" x2="18" y2="17"></line></svg>,
+        Youtube: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path><polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon></svg>,
+        Search: ({size=20}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>,
+        Clock: ({size=12}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>,
+        BarChart: ({size=12}) => <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="20" x2="12" y2="10"></line><line x1="18" y1="20" x2="18" y2="4"></line><line x1="6" y1="20" x2="6" y2="16"></line></svg>
     };
 
     const FridgeChefApp = () => {
-      const [inputVal, setInputVal] = useState("");
-      const [myIngredients, setMyIngredients] = useState([]);
-      const [selectedRecipe, setSelectedRecipe] = useState(null);
+        const [inputVal, setInputVal] = useState('');
+        const [myIngredients, setMyIngredients] = useState([]);
+        const [selectedRecipe, setSelectedRecipe] = useState(null);
 
-      // ✅ 처음 로드시 저장된 재료 복원
-      useEffect(() => {
-        try {
-          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-          if (Array.isArray(saved)) setMyIngredients(saved.map(normalizeIngredient).filter(Boolean));
-        } catch (_) {}
-      }, []);
+        const recipes = [
+            { id: 1, name: "김치볶음밥", ingredients: ["김치", "밥", "대파", "계란", "스팸", "참기름"], time: "15분", difficulty: "쉬움", steps: ["대파와 스팸, 김치를 먹기 좋은 크기로 썰어줍니다.", "팬에 식용유를 두르고 대파를 볶아 파기름을 냅니다.", "스팸과 김치를 넣고 충분히 볶아줍니다.", "밥을 넣고 양념이 잘 배도록 볶습니다.", "참기름을 두르고 계란 프라이를 올려 완성합니다."] },
+            { id: 2, name: "된장찌개", ingredients: ["된장", "두부", "애호박", "양파", "대파", "청양고추", "멸치육수"], time: "20분", difficulty: "보통", steps: ["멸치 육수를 끓입니다.", "육수에 된장을 잘 풀어줍니다.", "썰어둔 애호박, 양파를 넣고 끓입니다.", "두부와 대파, 청양고추를 넣고 한소끔 더 끓여냅니다."] },
+            { id: 3, name: "계란말이", ingredients: ["계란", "대파", "당근", "소금"], time: "10분", difficulty: "쉬움", steps: ["계란을 풀고 다진 대파와 당근, 소금을 넣습니다.", "팬에 기름을 두르고 계란물을 얇게 붓습니다.", "끝부분부터 조심스럽게 말아줍니다.", "남은 계란물을 부어가며 반복해서 말아줍니다."] },
+            { id: 4, name: "제육볶음", ingredients: ["돼지고기", "양파", "대파", "고추장", "고춧가루", "간장", "설탕", "마늘"], time: "30분", difficulty: "보통", steps: ["돼지고기에 양념 재료를 모두 넣고 재워둡니다.", "팬에 기름을 두르고 고기를 볶습니다.", "고기가 익어가면 손질한 채소를 넣고 볶습니다.", "참깨를 뿌려 마무리합니다."] },
+            { id: 5, name: "알리오 올리오", ingredients: ["파스타면", "마늘", "페페론치노", "올리브유", "소금"], time: "15분", difficulty: "보통", steps: ["끓는 물에 소금을 넣고 면을 삶습니다.", "팬에 올리브유를 넉넉히 두르고 얇게 썬 마늘을 볶습니다.", "마늘이 노릇해지면 페페론치노를 넣습니다.", "삶은 면과 면수를 넣고 볶아 유화시킵니다."] },
+            { id: 6, name: "떡볶이", ingredients: ["떡", "어묵", "대파", "고추장", "고춧가루", "설탕", "물"], time: "20분", difficulty: "쉬움", steps: ["물에 양념 재료를 풀고 끓입니다.", "물이 끓으면 떡과 어묵을 넣습니다.", "국물이 걸쭉해질 때까지 졸입니다.", "대파를 넣고 마무리합니다."] }
+        ];
 
-      // ✅ 재료가 바뀔 때마다 자동 저장
-      useEffect(() => {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(myIngredients));
-        } catch (_) {}
-      }, [myIngredients]);
+        const handleAddIngredient = () => {
+            if (inputVal.trim() && !myIngredients.includes(inputVal.trim())) {
+                setMyIngredients([...myIngredients, inputVal.trim()]);
+                setInputVal('');
+            }
+        };
 
-      const recipes = [
-        { id: 1, name: "김치볶음밥", ingredients: ["김치", "밥", "대파", "계란", "스팸", "참기름"], time: "15분", difficulty: "쉬움",
-          steps: ["대파와 스팸, 김치를 먹기 좋은 크기로 썰어줍니다.", "팬에 식용유를 두르고 대파를 볶아 파기름을 냅니다.", "스팸과 김치를 넣고 충분히 볶아줍니다.", "밥을 넣고 양념이 잘 배도록 볶습니다.", "참기름을 두르고 계란 프라이를 올려 완성합니다."] },
-        { id: 2, name: "된장찌개", ingredients: ["된장", "두부", "애호박", "양파", "대파", "청양고추", "멸치육수"], time: "20분", difficulty: "보통",
-          steps: ["멸치 육수를 끓입니다.", "육수에 된장을 잘 풀어줍니다.", "썰어둔 애호박, 양파를 넣고 끓입니다.", "두부와 대파, 청양고추를 넣고 한소끔 더 끓여냅니다."] },
-        { id: 3, name: "계란말이", ingredients: ["계란", "대파", "당근", "소금"], time: "10분", difficulty: "쉬움",
-          steps: ["계란을 풀고 다진 대파와 당근, 소금을 넣습니다.", "팬에 기름을 두르고 계란물을 얇게 붓습니다.", "끝부분부터 조심스럽게 말아줍니다.", "남은 계란물을 부어가며 반복해서 말아줍니다."] },
-        { id: 4, name: "제육볶음", ingredients: ["돼지고기", "양파", "대파", "고추장", "고춧가루", "간장", "설탕", "마늘"], time: "30분", difficulty: "보통",
-          steps: ["돼지고기에 양념 재료를 모두 넣고 재워둡니다.", "팬에 기름을 두르고 고기를 볶습니다.", "고기가 익어가면 손질한 채소를 넣고 볶습니다.", "참깨를 뿌려 마무리합니다."] },
-        { id: 5, name: "알리오 올리오", ingredients: ["파스타면", "마늘", "페페론치노", "올리브유", "소금"], time: "15분", difficulty: "보통",
-          steps: ["끓는 물에 소금을 넣고 면을 삶습니다.", "팬에 올리브유를 넉넉히 두르고 얇게 썬 마늘을 볶습니다.", "마늘이 노릇해지면 페페론치노를 넣습니다.", "삶은 면과 면수를 넣고 볶아 유화시킵니다."] },
-        { id: 6, name: "떡볶이", ingredients: ["떡", "어묵", "대파", "고추장", "고춧가루", "설탕", "물"], time: "20분", difficulty: "쉬움",
-          steps: ["물에 양념 재료를 풀고 끓입니다.", "물이 끓으면 떡과 어묵을 넣습니다.", "국물이 걸쭉해질 때까지 졸입니다.", "대파를 넣고 마무리합니다."] }
-      ];
+        const handleKeyDown = (e) => { if (e.key === 'Enter') handleAddIngredient(); };
+        const removeIngredient = (ingredient) => setMyIngredients(myIngredients.filter(item => item !== ingredient));
 
-      const addIngredientsFromInput = () => {
-        const items = splitIngredients(inputVal);
+        const sortedRecipes = useMemo(() => {
+            if (myIngredients.length === 0) return recipes;
+            return recipes.map(recipe => {
+                const matchCount = recipe.ingredients.filter(ing => 
+                    myIngredients.some(myIng => ing.includes(myIng) || myIng.includes(ing))
+                ).length;
+                const missingIngredients = recipe.ingredients.filter(ing => 
+                    !myIngredients.some(myIng => ing.includes(myIng) || myIng.includes(ing))
+                );
+                return { ...recipe, matchCount, missingIngredients };
+            }).sort((a, b) => b.matchCount - a.matchCount);
+        }, [myIngredients]);
 
-        if (items.length === 0) return;
+        const getYoutubeLink = (recipeName) => `https://www.youtube.com/results?search_query=${encodeURIComponent(recipeName + ' 레시피')}`;
 
-        setMyIngredients((prev) => {
-          const set = new Set(prev);
-          for (const item of items) set.add(item);
-          return Array.from(set);
-        });
-
-        setInputVal("");
-      };
-
-      const handleKeyDown = (e) => {
-        if (e.key === "Enter") addIngredientsFromInput();
-      };
-
-      const removeIngredient = (ingredient) => {
-        setMyIngredients((prev) => prev.filter((item) => item !== ingredient));
-      };
-
-      const clearAll = () => {
-        setMyIngredients([]);
-      };
-
-      const sortedRecipes = useMemo(() => {
-        if (myIngredients.length === 0) return recipes;
-
-        return recipes
-          .map((recipe) => {
-            const matchCount = recipe.ingredients.filter((ing) =>
-              myIngredients.some((myIng) => ing.includes(myIng) || myIng.includes(ing))
-            ).length;
-
-            const missingIngredients = recipe.ingredients.filter((ing) =>
-              !myIngredients.some((myIng) => ing.includes(myIng) || myIng.includes(ing))
-            );
-
-            return { ...recipe, matchCount, missingIngredients };
-          })
-          .sort((a, b) => (b.matchCount || 0) - (a.matchCount || 0));
-      }, [myIngredients]);
-
-      const getYoutubeLink = (recipeName) =>
-        `https://www.youtube.com/results?search_query=${encodeURIComponent(recipeName + " 레시피")}`;
-
-      const totalCount = myIngredients.length;
-
-      return (
-        <div className="min-h-screen bg-gray-50 pb-10 tap-highlight-none">
-          <header className="bg-orange-500 text-white p-6 shadow-md sticky top-0 z-10">
-            <div className="max-w-3xl mx-auto flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Icons.ChefHat size={32} />
-                <h1 className="text-xl sm:text-2xl font-bold">냉장고 파먹기 요리사</h1>
-              </div>
-              <div className="text-sm font-semibold bg-white/15 px-3 py-1 rounded-full">
-                재료 {totalCount}개
-              </div>
-            </div>
-          </header>
-
-          <main className="max-w-3xl mx-auto p-4 mt-4">
-            <section className="bg-white rounded-2xl shadow-sm p-5 mb-8 border border-gray-100">
-              <div className="flex items-start justify-between gap-3 mb-4">
-                <h2 className="text-lg font-bold flex items-center gap-2 text-gray-800">
-                  <Icons.Search size={20} className="text-orange-500" />
-                  있는 재료를 입력하세요
-                </h2>
-
-                <button
-                  onClick={clearAll}
-                  disabled={myIngredients.length === 0}
-                  className={`px-3 py-2 rounded-xl text-sm font-bold flex items-center gap-2 border transition
-                    ${myIngredients.length === 0 ? "text-gray-300 border-gray-200 bg-gray-50" : "text-gray-600 border-gray-200 bg-white hover:bg-gray-50 active:scale-95"}
-                  `}
-                  aria-label="재료 전체 삭제"
-                >
-                  <Icons.Trash size={18} className={myIngredients.length === 0 ? "text-gray-300" : "text-gray-500"} />
-                  전체 삭제
-                </button>
-              </div>
-
-              <div className="flex gap-2 mb-2">
-                <input
-                  type="text"
-                  className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 text-base"
-                  placeholder="예: 양파, 계란, 김치 (쉼표로 여러 개 입력 가능)"
-                  value={inputVal}
-                  onChange={(e) => setInputVal(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  inputMode="text"
-                />
-                <button
-                  onClick={addIngredientsFromInput}
-                  className="bg-orange-500 text-white px-5 py-3 rounded-xl hover:bg-orange-600 transition font-bold flex items-center gap-2 shrink-0 active:scale-95"
-                >
-                  <Icons.Plus size={20} />
-                  추가
-                </button>
-              </div>
-
-              <p className="text-xs text-gray-400 mb-4">
-                팁: <span className="font-semibold">엔터</span>를 눌러도 추가돼요. (예: <span className="font-semibold">양파, 계란, 김치</span>)
-              </p>
-
-              <div className="flex flex-wrap gap-2">
-                {myIngredients.length === 0 && (
-                  <p className="text-gray-400 text-sm py-2">재료를 한 번 입력해두면 자동 저장돼요!</p>
-                )}
-                {myIngredients.map((ing, idx) => (
-                  <span
-                    key={idx}
-                    className="bg-orange-50 text-orange-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 border border-orange-100 animate-fadeIn"
-                  >
-                    {ing}
-                    <button
-                      onClick={() => removeIngredient(ing)}
-                      className="text-orange-300 hover:text-orange-700 active:scale-95"
-                      aria-label={`${ing} 삭제`}
-                    >
-                      <Icons.X size={16} />
-                    </button>
-                  </span>
-                ))}
-              </div>
-            </section>
-
-            <section>
-              <h2 className="text-lg font-bold mb-5 flex items-center gap-2 text-gray-800 ml-1">
-                🍽️ 오늘 뭐 해먹을까요?
-              </h2>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {sortedRecipes.map((recipe) => {
-                  const matchCount = recipe.matchCount || 0;
-                  const isPerfect = matchCount > 0 && (recipe.missingIngredients?.length || 0) === 0;
-
-                  return (
-                    <div
-                      key={recipe.id}
-                      className={`bg-white rounded-2xl p-5 shadow-sm border-2 transition-all active:scale-95 cursor-pointer
-                        ${matchCount > 0 ? "border-orange-400" : "border-transparent"}
-                      `}
-                      onClick={() => setSelectedRecipe(recipe)}
-                      role="button"
-                      tabIndex={0}
-                    >
-                      <div className="flex justify-between items-start mb-3">
-                        <h3 className="text-lg font-bold text-gray-800">{recipe.name}</h3>
-                        {matchCount > 0 && (
-                          <span
-                            className={`text-[10px] px-2 py-1 rounded-lg font-bold uppercase
-                              ${isPerfect ? "bg-green-500 text-white" : "bg-orange-400 text-white"}
-                            `}
-                          >
-                            {isPerfect ? "준비 완료" : `${matchCount}개 보유`}
-                          </span>
-                        )}
-                      </div>
-
-                      <div className="flex gap-4 text-xs text-gray-400 mb-4">
-                        <span className="flex items-center gap-1">
-                          <Icons.Clock size={12} />
-                          {recipe.time}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Icons.BarChart size={12} />
-                          {recipe.difficulty}
-                        </span>
-                      </div>
-
-                      <div className="text-sm text-gray-500 line-clamp-1">
-                        재료: {recipe.ingredients.join(", ")}
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          </main>
-
-          {selectedRecipe && (
-            <div
-              className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm"
-              onClick={() => setSelectedRecipe(null)}
-            >
-              <div
-                className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-scaleIn"
-                onClick={(e) => e.stopPropagation()}
-              >
-                <div className="p-6">
-                  <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-2">
-                    <h2 className="text-2xl font-bold text-gray-900">{selectedRecipe.name}</h2>
-                    <button
-                      onClick={() => setSelectedRecipe(null)}
-                      className="p-2 bg-gray-100 rounded-full active:scale-95"
-                      aria-label="닫기"
-                    >
-                      <Icons.X size={24} className="text-gray-500" />
-                    </button>
-                  </div>
-
-                  <div className="mb-8">
-                    <h3 className="font-bold text-lg mb-3">필요한 재료</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {selectedRecipe.ingredients.map((ing, idx) => {
-                        const haveIt = myIngredients.some((my) => ing.includes(my) || my.includes(ing));
-                        return (
-                          <span
-                            key={idx}
-                            className={`px-3 py-2 rounded-xl text-sm border-2
-                              ${haveIt ? "bg-green-50 border-green-400 text-green-700 font-bold" : "bg-gray-50 border-gray-200 text-gray-400"}
-                            `}
-                          >
-                            {ing} {haveIt && "✓"}
-                          </span>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div className="mb-8">
-                    <h3 className="font-bold text-lg mb-4">만드는 순서</h3>
-                    <div className="space-y-4">
-                      {selectedRecipe.steps.map((step, idx) => (
-                        <div key={idx} className="flex gap-4 items-start">
-                          <span className="shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-black">
-                            {idx + 1}
-                          </span>
-                          <p className="text-gray-700 leading-relaxed pt-0.5">{step}</p>
+        return (
+            <div className="min-h-screen bg-gray-50 pb-10 tap-highlight-none">
+                <header className="bg-orange-500 text-white p-6 shadow-md sticky top-0 z-10">
+                    <div className="max-w-3xl mx-auto flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Icons.ChefHat size={32} />
+                            <h1 className="text-xl sm:text-2xl font-bold">냉장고 파먹기 요리사</h1>
                         </div>
-                      ))}
                     </div>
-                  </div>
+                </header>
 
-                  <a
-                    href={getYoutubeLink(selectedRecipe.name)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-red-700 transition shadow-lg mb-2 active:scale-95"
-                  >
-                    <Icons.Youtube size={28} />
-                    유튜브에서 영상 요리법 보기
-                  </a>
+                <main className="max-w-3xl mx-auto p-4 mt-4">
+                    <section className="bg-white rounded-2xl shadow-sm p-5 mb-8 border border-gray-100">
+                        <h2 className="text-lg font-bold mb-4 flex items-center gap-2 text-gray-800">
+                            <Icons.Search size={20} className="text-orange-500"/>
+                            있는 재료를 입력하세요
+                        </h2>
+                        <div className="flex gap-2 mb-4">
+                            <input
+                                type="text"
+                                className="flex-1 border border-gray-300 rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-400 text-base"
+                                placeholder="예: 양파, 계란, 김치"
+                                value={inputVal}
+                                onChange={(e) => setInputVal(e.target.value)}
+                                onKeyDown={handleKeyDown}
+                            />
+                            <button onClick={handleAddIngredient} className="bg-orange-500 text-white px-5 py-3 rounded-xl hover:bg-orange-600 transition font-bold flex items-center gap-1 shrink-0">
+                                <Icons.Plus size={20} /> 추가
+                            </button>
+                        </div>
+                        <div className="flex flex-wrap gap-2">
+                            {myIngredients.length === 0 && <p className="text-gray-400 text-sm py-2">재료를 한 개씩 추가해보세요!</p>}
+                            {myIngredients.map((ing, idx) => (
+                                <span key={idx} className="bg-orange-50 text-orange-700 px-4 py-2 rounded-full text-sm font-semibold flex items-center gap-2 border border-orange-100 animate-fadeIn">
+                                    {ing}
+                                    <button onClick={() => removeIngredient(ing)} className="text-orange-300 hover:text-orange-700"><Icons.X size={16} /></button>
+                                </span>
+                            ))}
+                        </div>
+                    </section>
 
-                  <p className="text-center text-xs text-gray-400 mt-4 italic">
-                    영상을 보면서 요리하면 더 쉬워요!
-                  </p>
-                </div>
-              </div>
+                    <section>
+                        <h2 className="text-lg font-bold mb-5 flex items-center gap-2 text-gray-800 ml-1">
+                            🍽️ 오늘 뭐 해먹을까요?
+                        </h2>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            {sortedRecipes.map((recipe) => {
+                                const matchCount = recipe.matchCount || 0;
+                                const isPerfect = matchCount > 0 && recipe.missingIngredients?.length === 0;
+                                return (
+                                    <div key={recipe.id} 
+                                        className={`bg-white rounded-2xl p-5 shadow-sm border-2 transition-all active:scale-95 ${matchCount > 0 ? 'border-orange-400' : 'border-transparent'}`}
+                                        onClick={() => setSelectedRecipe(recipe)}>
+                                        <div className="flex justify-between items-start mb-3">
+                                            <h3 className="text-lg font-bold text-gray-800">{recipe.name}</h3>
+                                            {matchCount > 0 && (
+                                                <span className={`text-[10px] px-2 py-1 rounded-lg font-bold uppercase ${isPerfect ? 'bg-green-500 text-white' : 'bg-orange-400 text-white'}`}>
+                                                    {isPerfect ? '준비 완료' : `${matchCount}개 보유`}
+                                                </span>
+                                            )}
+                                        </div>
+                                        <div className="flex gap-4 text-xs text-gray-400 mb-4">
+                                            <span className="flex items-center gap-1"><Icons.Clock size={12}/> {recipe.time}</span>
+                                            <span className="flex items-center gap-1"><Icons.BarChart size={12}/> {recipe.difficulty}</span>
+                                        </div>
+                                        <div className="text-sm text-gray-500 line-clamp-1">
+                                            재료: {recipe.ingredients.join(', ')}
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </section>
+                </main>
+
+                {selectedRecipe && (
+                    <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 z-50 backdrop-blur-sm" onClick={() => setSelectedRecipe(null)}>
+                        <div className="bg-white rounded-3xl w-full max-w-lg max-h-[85vh] overflow-y-auto shadow-2xl animate-scaleIn" onClick={e => e.stopPropagation()}>
+                            <div className="p-6">
+                                <div className="flex justify-between items-center mb-6 sticky top-0 bg-white pb-2">
+                                    <h2 className="text-2xl font-bold text-gray-900">{selectedRecipe.name}</h2>
+                                    <button onClick={() => setSelectedRecipe(null)} className="p-2 bg-gray-100 rounded-full"><Icons.X size={24} className="text-gray-500" /></button>
+                                </div>
+                                
+                                <div className="mb-8">
+                                    <h3 className="font-bold text-lg mb-3">필요한 재료</h3>
+                                    <div className="flex flex-wrap gap-2">
+                                        {selectedRecipe.ingredients.map((ing, idx) => {
+                                            const haveIt = myIngredients.some(my => ing.includes(my) || my.includes(ing));
+                                            return <span key={idx} className={`px-3 py-2 rounded-xl text-sm border-2 ${haveIt ? 'bg-green-50 border-green-400 text-green-700 font-bold' : 'bg-gray-50 border-gray-200 text-gray-400'}`}>{ing} {haveIt && '✓'}</span>
+                                        })}
+                                    </div>
+                                </div>
+
+                                <div className="mb-8">
+                                    <h3 className="font-bold text-lg mb-4">만드는 순서</h3>
+                                    <div className="space-y-4">
+                                        {selectedRecipe.steps.map((step, idx) => (
+                                            <div key={idx} className="flex gap-4 items-start">
+                                                <span className="shrink-0 w-7 h-7 rounded-full bg-orange-500 text-white flex items-center justify-center text-sm font-black">{idx + 1}</span>
+                                                <p className="text-gray-700 leading-relaxed pt-0.5">{step}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <a href={getYoutubeLink(selectedRecipe.name)} target="_blank" rel="noopener noreferrer" 
+                                   className="w-full bg-red-600 text-white py-4 rounded-2xl font-bold flex items-center justify-center gap-3 hover:bg-red-700 transition shadow-lg mb-2">
+                                    <Icons.Youtube size={28} /> 유튜브에서 영상 요리법 보기
+                                </a>
+                                <p className="text-center text-xs text-gray-400 mt-4 italic">영상을 보면서 요리하면 더 쉬워요!</p>
+                            </div>
+                        </div>
+                    </div>
+                )}
             </div>
-          )}
-        </div>
-      );
+        );
     };
 
-    const root = ReactDOM.createRoot(document.getElementById("root"));
+    const root = ReactDOM.createRoot(document.getElementById('root'));
     root.render(<FridgeChefApp />);
-  </script>
+</script>
 </body>
 </html>
